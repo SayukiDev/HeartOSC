@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            goos: windows
+            goarch: amd64
+          - runner: windows-11-arm
+            goos: windows
+            goarch: arm64
+          - runner: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - runner: ubuntu-24.04-arm
+            goos: linux
+            goarch: arm64
+          - runner: macos-13
+            goos: darwin
+            goarch: amd64
+          - runner: macos-latest
+            goos: darwin
+            goarch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install go-winres
+        if: matrix.goos == 'windows'
+        run: go install github.com/tc-hib/go-winres@latest
+
+      - name: Build
+        run: go run ./builder ${{ matrix.goos }} ${{ matrix.goarch }}
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $name = "HeartOSC_${{ matrix.goos }}_${{ matrix.goarch }}"
+          Compress-Archive -Path "output/$name" -DestinationPath "$name.zip"
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: HeartOSC_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+
+      - name: Upload artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: HeartOSC_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: HeartOSC_${{ matrix.goos }}_${{ matrix.goarch }}.zip
