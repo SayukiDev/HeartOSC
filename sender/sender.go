@@ -2,7 +2,9 @@ package sender
 
 import (
 	"HeartOSC/heart"
+	"errors"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/hypebeast/go-osc/osc"
@@ -20,6 +22,7 @@ type Sender struct {
 	ParamName          string
 	EnableRandomOffset bool
 	EnableSmoothing    bool
+	once               sync.Once
 }
 
 func New(addr string, port int, paramName string, enableFilter bool, enableSmoothing bool) *Sender {
@@ -36,13 +39,20 @@ func (s *Sender) Send(value int32) error {
 }
 
 func (s *Sender) Start() error {
+	if s.closeC != nil {
+		return errors.New("sender already started")
+	}
 	s.closeC = make(chan struct{})
+	s.once = sync.Once{}
+	closeC := s.closeC
 	go func() {
-		for ; ; <-time.Tick(time.Second * 1) {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for {
 			select {
-			case <-s.closeC:
+			case <-closeC:
 				return
-			default:
+			case <-ticker.C:
 			}
 			target := heart.GetHeartRate()
 			isNewTarget := target != s.rate
@@ -73,6 +83,9 @@ func (s *Sender) Start() error {
 }
 
 func (s *Sender) Close() error {
-	close(s.closeC)
+	s.once.Do(func() {
+		close(s.closeC)
+		s.closeC = nil
+	})
 	return nil
 }

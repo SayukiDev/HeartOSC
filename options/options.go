@@ -44,10 +44,10 @@ func (c *Options) Load() (isDefault bool, err error) {
 
 func (c *Options) Save() error {
 	f, err := os.OpenFile(c.savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	defer f.Close()
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	err = json.NewEncoder(f).Encode(c)
 	if err != nil {
 		return err

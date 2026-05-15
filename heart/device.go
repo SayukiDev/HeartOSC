@@ -55,6 +55,7 @@ func ScanAndConnectDeviceWithTimeout(addr string, timeout time.Duration) (*Devic
 	var sc = make(chan bluetooth.ScanResult, 1)
 	var err error
 	go func() {
+		defer close(sc)
 		err = adapter.Scan(func(a *bluetooth.Adapter, result bluetooth.ScanResult) {
 			if result.Address.String() == addr {
 				adapter.StopScan()
@@ -63,11 +64,12 @@ func ScanAndConnectDeviceWithTimeout(addr string, timeout time.Duration) (*Devic
 			}
 		})
 		if err != nil {
-			close(sc)
+			return
 		}
 	}()
 	select {
 	case <-time.After(timeout):
+		adapter.StopScan()
 		return nil, errors.New("scan device timeout")
 	case result, ok := <-sc:
 		if !ok {
