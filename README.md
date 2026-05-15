@@ -3,6 +3,15 @@ KISS（Keep It Simple, Stupid.）原則を従った
 BLE（Bluetooth Low Energy）対応心拍計を
 VRChatと連動させるための極めて軽量でシンプルなOSC送信用TUIプログラム。
 
+## ダウンロード
+お使いのOSやプラットフォームに従って選んでください、通常は`HeartOSC_windows_amd64.zip`でおけです。
+
+| OS      | x86_64 (amd64) | ARM64 |
+|---------|----------------|-------|
+| Windows | [HeartOSC_windows_amd64.zip](https://github.com/SayukiDev/HeartOSC/releases/latest/download/HeartOSC_windows_amd64.zip) | [HeartOSC_windows_arm64.zip](https://github.com/SayukiDev/HeartOSC/releases/latest/download/HeartOSC_windows_arm64.zip) |
+| Linux   | [HeartOSC_linux_amd64.zip](https://github.com/SayukiDev/HeartOSC/releases/latest/download/HeartOSC_linux_amd64.zip)     | [HeartOSC_linux_arm64.zip](https://github.com/SayukiDev/HeartOSC/releases/latest/download/HeartOSC_linux_arm64.zip)     |
+| macOS   | [HeartOSC_darwin_amd64.zip](https://github.com/SayukiDev/HeartOSC/releases/latest/download/HeartOSC_darwin_amd64.zip)   | [HeartOSC_darwin_arm64.zip](https://github.com/SayukiDev/HeartOSC/releases/latest/download/HeartOSC_darwin_arm64.zip)   |
+
 ## 使用
 ![](./docs/capture-2026-05-15.gif)
 1. ファイルを実行する
