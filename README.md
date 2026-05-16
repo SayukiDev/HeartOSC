@@ -1,4 +1,5 @@
 # HeartOSC
+[![License](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
 
 KISS（Keep It Simple, Stupid.）原則を従った
 BLE（Bluetooth Low Energy）対応心拍計を
