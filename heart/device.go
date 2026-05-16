@@ -48,46 +48,6 @@ func ScanDeviceWithTimeout(timeout time.Duration) ([]Device, error) {
 var device *bluetooth.Device
 var deviceService *bluetooth.DeviceService
 
-func ScanAndConnectDeviceWithTimeout(addr string, timeout time.Duration) (*Device, error) {
-	if device != nil {
-		return nil, fmt.Errorf("device %s is connected", addr)
-	}
-	var sc = make(chan bluetooth.ScanResult, 1)
-	var err error
-	go func() {
-		defer close(sc)
-		err = adapter.Scan(func(a *bluetooth.Adapter, result bluetooth.ScanResult) {
-			if result.Address.String() == addr {
-				adapter.StopScan()
-				sc <- result
-				return
-			}
-		})
-		if err != nil {
-			return
-		}
-	}()
-	select {
-	case <-time.After(timeout):
-		adapter.StopScan()
-		return nil, errors.New("scan device timeout")
-	case result, ok := <-sc:
-		if !ok {
-			return nil, err
-		}
-		err = ConnectDevice(result.Address)
-		if err != nil {
-			return nil, err
-		}
-		return &Device{
-			Addr:  result.Address,
-			Name:  result.LocalName(),
-			Maker: result.ManufacturerData(),
-			RSSI:  result.RSSI,
-		}, nil
-	}
-}
-
 func ConnectDevice(addr bluetooth.Address) error {
 	var s []bluetooth.DeviceService
 	time.Sleep(1000 * time.Millisecond)
@@ -104,6 +64,7 @@ func ConnectDevice(addr bluetooth.Address) error {
 		device = &d
 		srv, err := device.DiscoverServices([]bluetooth.UUID{bluetooth.ServiceUUIDHeartRate})
 		if err != nil {
+			device.Disconnect()
 			return fmt.Errorf("discover service error: %s", err)
 		}
 		s = srv

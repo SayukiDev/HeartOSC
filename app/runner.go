@@ -36,7 +36,6 @@ type runnerModel struct {
 	connected     bool
 	reConnecting  bool
 	connectFailed bool
-	test          bool
 	srv           *service.Service
 }
 
@@ -174,9 +173,6 @@ func (m *runnerModel) View() string {
 			}
 		}
 
-	}
-	if m.test {
-		b.WriteString("test")
 	}
 	b.WriteString("\n\n")
 	if m.started {

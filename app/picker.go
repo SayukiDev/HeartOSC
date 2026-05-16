@@ -34,7 +34,11 @@ func (m *pickerModel) Init() tea.Cmd {
 	if m.srv.Conf.Device != "" {
 		for _, d := range m.devices {
 			if d.Addr.String() == m.srv.Conf.Device {
-				return func() tea.Msg { return pickerDoneMsg{device: d} }
+				m.selected = 0
+				m.devices = nil
+				return func() tea.Msg {
+					return pickerDoneMsg{device: d}
+				}
 			}
 		}
 	}
@@ -56,6 +60,8 @@ func (m *pickerModel) Update(msg tea.Msg) tea.Cmd {
 		case "enter":
 			if len(m.devices) > 0 {
 				d := m.devices[m.selected]
+				m.selected = 0
+				m.devices = nil
 				return func() tea.Msg { return pickerDoneMsg{device: d} }
 			}
 		case "r":
