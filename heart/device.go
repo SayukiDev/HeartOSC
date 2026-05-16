@@ -13,7 +13,7 @@ import (
 type Device struct {
 	Addr          bluetooth.Address
 	Name          string
-	Maker         []bluetooth.ManufacturerDataElement
+	Maker         string
 	HaveHeartRate bool //
 	RSSI          int16
 }
@@ -35,10 +35,15 @@ func ScanDeviceWithTimeout(timeout time.Duration) ([]Device, error) {
 	adapter.StopScan()
 	rsp := make([]Device, 0, len(devices))
 	for _, v := range devices {
+		md := v.ManufacturerData()
+		maker := ""
+		if len(md) > 0 {
+			maker = string(md[0].Data)
+		}
 		rsp = append(rsp, Device{
 			Addr:          v.Address,
 			Name:          v.LocalName(),
-			Maker:         v.ManufacturerData(),
+			Maker:         maker,
 			RSSI:          v.RSSI,
 			HaveHeartRate: v.HasServiceUUID(bluetooth.ServiceUUIDHeartRate),
 		})

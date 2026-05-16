@@ -96,6 +96,9 @@ func (m *pickerModel) View() string {
 		if name == "" {
 			name = "(unnamed)"
 		}
+		if d.Maker != "" {
+			name = fmt.Sprintf("%s[%s]", name, d.Maker)
+		}
 		line := fmt.Sprintf(" %s  %s  [RSSI %d]", d.Addr.String(), name, d.RSSI)
 		if d.HaveHeartRate {
 			line += " (可能な心拍計デバイス)"
