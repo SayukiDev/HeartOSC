@@ -3,6 +3,7 @@ package heart
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/avast/retry-go/v5"
@@ -48,6 +49,8 @@ func ScanDeviceWithTimeout(timeout time.Duration) ([]Device, error) {
 var device *bluetooth.Device
 var deviceService *bluetooth.DeviceService
 
+var NotFoundServiceError = errors.New("service not found")
+
 func ConnectDevice(addr bluetooth.Address) error {
 	var s []bluetooth.DeviceService
 	time.Sleep(1000 * time.Millisecond)
@@ -65,19 +68,26 @@ func ConnectDevice(addr bluetooth.Address) error {
 		srv, err := device.DiscoverServices([]bluetooth.UUID{bluetooth.ServiceUUIDHeartRate})
 		if err != nil {
 			device.Disconnect()
+			if !strings.Contains(err.Error(), "async") {
+				breakErr = fmt.Errorf("discover service error: %s", err)
+				return nil
+			}
 			return fmt.Errorf("discover service error: %s", err)
 		}
 		s = srv
 		return nil
 	})
 	if breakErr != nil {
+		if strings.Contains(breakErr.Error(), "not find") {
+			return NotFoundServiceError
+		}
 		return breakErr
 	}
 	if err != nil {
 		return fmt.Errorf("discover service error: %s", err)
 	}
 	if len(s) == 0 {
-		return errors.New("service not found")
+		return NotFoundServiceError
 	}
 	deviceService = &(s[0])
 	err = startRevcHeartRate()

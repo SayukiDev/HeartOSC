@@ -3,6 +3,7 @@ package app
 import (
 	"HeartOSC/heart"
 	"HeartOSC/service"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -19,7 +20,7 @@ const (
 type runnerStartedMsg struct{}
 
 type runnerErrorMsg struct {
-	err error
+	err string
 }
 
 type reConnectMsg struct{}
@@ -31,7 +32,7 @@ type runnerModel struct {
 	host          string
 	port          int
 	rate          int32
-	err           error
+	err           string
 	started       bool
 	connected     bool
 	reConnecting  bool
@@ -64,11 +65,11 @@ func (m *runnerModel) Update(msg tea.Msg) tea.Cmd {
 		switch msg.String() {
 		case "r":
 			m.started = false
-			m.err = nil
+			m.err = ""
 			return func() tea.Msg {
 				err := reconnectDevice(m.device)
 				if err != nil {
-					return runnerErrorMsg{err: err}
+					return runnerErrorMsg{err: err.Error()}
 				}
 				return runnerStartedMsg{}
 			}
@@ -78,9 +79,9 @@ func (m *runnerModel) Update(msg tea.Msg) tea.Cmd {
 			m.srv.Conf.Device = ""
 			err := m.srv.Conf.Save()
 			if err != nil {
-				m.err = err
+				m.err = err.Error()
 				return func() tea.Msg {
-					return runnerErrorMsg{err: err}
+					return runnerErrorMsg{err: err.Error()}
 				}
 			}
 			return func() tea.Msg {
@@ -93,9 +94,9 @@ func (m *runnerModel) Update(msg tea.Msg) tea.Cmd {
 			m.srv.Conf.Device = m.device.Addr.String()
 			err := m.srv.Conf.Save()
 			if err != nil {
-				m.err = err
+				m.err = err.Error()
 				return func() tea.Msg {
-					return runnerErrorMsg{err: err}
+					return runnerErrorMsg{err: err.Error()}
 				}
 			}
 		}
@@ -145,7 +146,7 @@ func (m *runnerModel) View() string {
 	b.WriteString(titleStyle.Render(fmt.Sprintf("接続: %s (%s)", name, m.device.Addr.String())))
 	b.WriteString("\n\n")
 
-	if m.err != nil {
+	if m.err != "" {
 		b.WriteString(errorStyle.Render(fmt.Sprintf("エラー: %s", m.err)))
 		b.WriteString("\n\n")
 		b.WriteString(helpStyle.Render("終了: q / ctrl+c ・ 再接続: r  ・ 戻る: d"))
@@ -189,12 +190,19 @@ func (m *runnerModel) View() string {
 func startCmd(d heart.Device, srv *service.Service) tea.Cmd {
 	return func() tea.Msg {
 		if err := heart.ConnectDevice(d.Addr); err != nil {
-			return runnerErrorMsg{err: fmt.Errorf("接続失敗: %w", err)}
+			msg := ""
+			if errors.Is(err, heart.NotFoundServiceError) {
+				msg = "HeartRateサービス見つかりませんでした、心拍計デバイスではないあるいはサポートされていません。"
+			}
+			if msg == "" {
+				msg = fmt.Errorf("connect error: %s", err).Error()
+			}
+			return runnerErrorMsg{err: msg}
 		}
 		err := srv.StartSending()
 		if err != nil {
 			return runnerErrorMsg{
-				err: fmt.Errorf("start sending error: %w", err),
+				err: fmt.Errorf("start sending error: %s", err).Error(),
 			}
 		}
 		return runnerStartedMsg{}
