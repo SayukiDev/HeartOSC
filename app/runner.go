@@ -88,6 +88,13 @@ func (m *runnerModel) Update(msg tea.Msg) tea.Cmd {
 				stopCmd(m.srv)
 				return pickerRescanMsg{}
 			}
+		case "b":
+			if m.started {
+				return nil
+			}
+			return func() tea.Msg {
+				return pickerRescanMsg{}
+			}
 		}
 	case runnerStartedMsg:
 		if m.srv.Conf.Device != m.device.Addr.String() {
@@ -149,7 +156,11 @@ func (m *runnerModel) View() string {
 	if m.err != "" {
 		b.WriteString(errorStyle.Render(fmt.Sprintf("エラー: %s", m.err)))
 		b.WriteString("\n\n")
-		b.WriteString(helpStyle.Render("終了: q / ctrl+c ・ 再接続: r  ・ 戻る: d"))
+		if m.started {
+			b.WriteString(helpStyle.Render("終了: q / ctrl+c ・ 再接続: r  ・ 切断: d"))
+		} else {
+			b.WriteString(helpStyle.Render("終了: q / ctrl+c ・ 再接続: r  ・ 戻る: b"))
+		}
 		return b.String()
 	}
 
