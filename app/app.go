@@ -96,6 +96,7 @@ func (m *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = stateScanning
 		return m, m.scan.Init()
 	case error:
+		m.error = newErrorModel(msg)
 		m.state = stateError
 		return m, nil
 	case switchStateMsg:
