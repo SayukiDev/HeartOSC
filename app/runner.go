@@ -33,6 +33,7 @@ type runnerModel struct {
 	port          int
 	rate          int32
 	err           string
+	reconnectErr  error
 	started       bool
 	connected     bool
 	reConnecting  bool
@@ -125,10 +126,17 @@ func (m *runnerModel) Update(msg tea.Msg) tea.Cmd {
 		}
 		return runnerTickCmd()
 	case reConnectMsg:
-		m.connectFailed = false
+		if !m.connectFailed {
+			// update status
+			m.connectFailed = false
+			return func() tea.Msg {
+				return reConnectMsg{}
+			}
+		}
 		err := reconnectDevice(m.device)
 		if err != nil {
 			m.connectFailed = true
+			m.reconnectErr = err
 			return tea.Tick(5*time.Second, func(_ time.Time) tea.Msg {
 				return reConnectMsg{}
 			})
@@ -180,6 +188,8 @@ func (m *runnerModel) View() string {
 			b.WriteString("\n\n")
 			if m.connectFailed {
 				b.WriteString(errorStyle.Render("再接続に失敗しました、５秒後に再試行します..."))
+				b.WriteString("\n")
+				b.WriteString(errorStyle.Render("エラー: ", m.reconnectErr.Error()))
 			} else {
 				b.WriteString(errorStyle.Render("接続されていません、再接続中..."))
 			}
