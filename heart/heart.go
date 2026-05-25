@@ -9,6 +9,7 @@ var (
 )
 
 func Start() error {
+	pullMakerList()
 	return adapter.Enable()
 }
 

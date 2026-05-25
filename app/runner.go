@@ -126,7 +126,7 @@ func (m *runnerModel) Update(msg tea.Msg) tea.Cmd {
 		}
 		return runnerTickCmd()
 	case reConnectMsg:
-		if !m.connectFailed {
+		if m.connectFailed {
 			// update status
 			m.connectFailed = false
 			return func() tea.Msg {

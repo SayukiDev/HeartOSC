@@ -38,7 +38,7 @@ func ScanDeviceWithTimeout(timeout time.Duration) ([]Device, error) {
 		md := v.ManufacturerData()
 		maker := ""
 		if len(md) > 0 {
-			maker = string(md[0].Data)
+			maker = getMakerName(md[0].CompanyID)
 		}
 		rsp = append(rsp, Device{
 			Addr:          v.Address,

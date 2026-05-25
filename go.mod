@@ -8,6 +8,8 @@ require (
 	charm.land/lipgloss/v2 v2.0.2
 	github.com/avast/retry-go/v5 v5.0.0
 	github.com/hypebeast/go-osc v0.0.0-20220308234300-cec5a8a1e5f5
+	gopkg.in/yaml.v3 v3.0.1
+	resty.dev/v3 v3.0.0-beta.6
 	tinygo.org/x/bluetooth v0.15.0
 )
 
@@ -37,6 +39,7 @@ require (
 	github.com/tinygo-org/pio v0.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d // indirect
+	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 )
