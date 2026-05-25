@@ -50,5 +50,5 @@ func (s *startModel) Init() tea.Cmd {
 }
 
 func (s *startModel) View() string {
-	return "起動中..."
+	return "\n\n起動中..."
 }

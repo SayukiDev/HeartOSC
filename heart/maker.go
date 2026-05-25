@@ -47,7 +47,7 @@ func getMakerName(id uint16) string {
 	}
 	if v, ok := makerList[id]; ok {
 		return v
-	} else {
-		return strconv.Itoa(int(id))
 	}
+
+	return strconv.Itoa(int(id))
 }
