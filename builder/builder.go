@@ -5,6 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
+
+	"resty.dev/v3"
 )
 
 func main() {
@@ -16,8 +19,11 @@ func main() {
 	if len(os.Args) >= 3 {
 		arch = []string{os.Args[2]}
 	}
-
-	err := os.MkdirAll("output", 0755)
+	err := writeCompanyIdentifiers()
+	if err != nil {
+		panic(err)
+	}
+	err = os.MkdirAll("output", 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -52,6 +58,22 @@ func main() {
 			}
 		}
 	}
+}
+
+const listUrl = "https://bitbucket.org/bluetooth-SIG/public/raw/a87138721ab82f2b69436603c0534532029be72a/assigned_numbers/company_identifiers/company_identifiers.yaml"
+
+func writeCompanyIdentifiers() error {
+	resp, err := resty.New().SetTimeout(time.Second * 20).R().Get(listUrl)
+	if err != nil {
+		return err
+	}
+	p := "heart/company_identifiers.yaml"
+	os.Remove(p)
+	err = os.WriteFile(p, resp.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func ExecStd(env []string, name string, params ...string) error {
