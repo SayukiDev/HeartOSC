@@ -3,6 +3,7 @@ package app
 import (
 	"HeartOSC/heart"
 	"HeartOSC/service"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -77,7 +78,12 @@ func (m *pickerModel) View() string {
 	var b strings.Builder
 
 	if m.err != nil {
-		b.WriteString(errorStyle.Render(fmt.Sprintf("スキャン失敗: %s", m.err)))
+		if errors.Is(m.err, heart.InternalErrorOrNoBluetoothReceiver) {
+			b.WriteString(errorStyle.Render(fmt.Sprintf("スキャン失敗: Bluetoothレシーバー存在しないあるいはOS内部エラー")))
+		} else {
+			b.WriteString(errorStyle.Render(fmt.Sprintf("スキャン失敗: %s", m.err)))
+		}
+
 		b.WriteString("\n\n")
 		b.WriteString(helpStyle.Render("r: 再スキャン ・ q: 終了"))
 		return b.String()

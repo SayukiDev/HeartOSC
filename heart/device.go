@@ -18,6 +18,8 @@ type Device struct {
 	RSSI          int16
 }
 
+var InternalErrorOrNoBluetoothReceiver = errors.New("internal error or no Bluetooth receiver")
+
 func ScanDeviceWithTimeout(timeout time.Duration) ([]Device, error) {
 	var devices = make(map[string]bluetooth.ScanResult)
 	var failedChan = make(chan error, 1)
@@ -29,6 +31,11 @@ func ScanDeviceWithTimeout(timeout time.Duration) ([]Device, error) {
 	}()
 	select {
 	case err := <-failedChan:
+		if err != nil {
+			if strings.HasPrefix(err.Error(), "failed to stop scanning") {
+				return nil, InternalErrorOrNoBluetoothReceiver
+			}
+		}
 		return nil, err
 	case <-time.After(timeout):
 	}
